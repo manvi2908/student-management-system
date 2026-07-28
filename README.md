@@ -1,16 +1,160 @@
-# React + Vite
+# 🎓 Student Management System
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern **Student Management System** built with **React.js**, **Tailwind CSS**, **Axios**, and **DummyJSON API**. The application provides an intuitive dashboard for managing student records with CRUD operations, search, filtering, sorting, pagination, validation, and Local Storage persistence.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 🚀 Features
 
-## React Compiler
+- 📋 Display Student List
+- ➕ Add New Student
+- ✏️ Update Student Details
+- ❌ Delete Student
+- ✅ Verify Student
+- 🔍 Search Students
+- 📑 Pagination
+- 📊 Dashboard Statistics
+- 📦 Local Storage Persistence
+- ✔️ Form Validation
+- 🎨 Responsive UI
+- ⚡ Fast Performance with Vite
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+## 🛠 Tech Stack
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### Frontend
+- React.js
+- JavaScript (ES6+)
+- Tailwind CSS
+- HTML5
+- CSS3
+
+### API
+- DummyJSON API
+- Axios
+
+### State Management
+- React Hooks
+- useState
+- useEffect
+
+### Storage
+- Browser Local Storage
+
+### Tools
+- Git
+- GitHub
+- VS Code
+- npm
+
+---
+
+## 📁 Project Structure
+
+```text
+src
+│
+├── api
+├── assets
+├── components
+│   ├── Loader.jsx
+│   ├── Navbar.jsx
+│   ├── StatsCard.jsx
+│   └── StudentForm.jsx
+│
+├── pages
+│   ├── Dashboard.jsx
+│   └── AddStudent.jsx
+│
+├── services
+├── utils
+│
+├── App.jsx
+├── main.jsx
+└── index.css
+```
+
+---
+
+## ⚙️ Installation
+
+Clone the repository
+
+```bash
+git clone https://github.com/manvi2908/student-management-system.git
+```
+
+Move into project folder
+
+```bash
+cd student-management-system
+```
+
+Install dependencies
+
+```bash
+npm install
+```
+
+Start development server
+
+```bash
+npm run dev
+```
+
+---
+
+## 📸 Screenshots
+
+> Add screenshots here after deployment.
+
+Example:
+
+Dashboard
+
+![Dashboard](screenshots/dashboard.png)
+
+Student Form
+
+![Student Form](screenshots/form.png)
+
+---
+
+## 🔮 Future Enhancements
+
+- Import Students from CSV
+- Export Students to CSV
+- Excel Export
+- Excel Import
+- Authentication
+- Dark Mode
+- Charts & Analytics
+- Backend Integration
+- Cloud Database
+- Role Based Access
+
+---
+
+## 📚 Learning Outcomes
+
+Through this project I learned:
+
+- React Component Architecture
+- CRUD Operations
+- API Integration using Axios
+- State Management
+- Form Validation
+- Pagination
+- Local Storage
+- Error Handling
+- Responsive UI Design
+- Git & GitHub Workflow
+
+---
+
+## 👩‍💻 Author
+
+**Manvi Goyal**
+
+GitHub: https://github.com/manvi2908
