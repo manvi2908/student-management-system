@@ -117,7 +117,11 @@ Dashboard
 
 Student Form
 
-![Student Form](screenshots/form.png)
+![Student Form](screenshots/add-student.png)
+
+Student List
+
+![Student List](screenshots/student-list.png)
 
 ---
 
