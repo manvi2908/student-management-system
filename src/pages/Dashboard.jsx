@@ -1,7 +1,7 @@
 // ==============================
 // Import Required Libraries
 // ==============================
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 
 // Import API Function
 import { getStudents, verifyStudent, deleteStudent} from "../services/studentServices";
@@ -12,6 +12,12 @@ import Navbar from "../components/Navbar";
 //import StudentForm from "../components/StudentForm";
 import AddStudent from "./AddStudent";
 import StatsCard from "../components/StatsCard";
+import {
+  exportToCSV,
+  exportToExcel,
+} from "../utils/exportUtility";
+
+import {importStudents} from "../utils/importUtility";
 
 function Dashboard() {
 
@@ -26,7 +32,14 @@ function Dashboard() {
   const [searchTerm, setSearchTerm] = useState("");
   // to show form
   const [showForm, setShowForm] = useState(false);
+  // show actions of export, import and add student 
+  const [showMenu, setShowMenu] = useState(false);
+  // export pop up ke liye 
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [exportFormat, setExportFormat] = useState("csv");
   const [currentPage, setCurrentPage] = useState(1);
+  const fileInputRef = useRef(null);
   const studentsPerPage = 6;
   
   // Store the detail of students after clicking on edit 
@@ -50,19 +63,26 @@ function Dashboard() {
   ).length;
 
   // Calculate Average Age
-  const averageAge =
-  students.length > 0
-    ? (
-        students.reduce(
-          (sum, student) => sum + Number(student.age),
-          0
-        ) / students.length
-      ).toFixed(1)
-    : 0;
-
-    const maxAge = Math.max(
-  ...students.map(student => Number(student.age))
+  const validStudents = students.filter(
+  (student) => student.age !== undefined && student.age !== null && student.age !== ""
 );
+
+const averageAge =
+  validStudents.length > 0
+    ? (
+        validStudents.reduce(
+          (sum, student) => sum + Number(student.age || 0),
+          0
+        ) / validStudents.length
+      ).toFixed(1)
+    : "0";
+
+    const maxAge =
+  students.length > 0
+    ? Math.max(
+        ...students.map((student) => Number(student.age || 0))
+      )
+    : 0;
 
 const minAge = Math.min(
   ...students.map(student => Number(student.age))
@@ -170,6 +190,7 @@ if (sortBy === "age-desc") {
   );
 
 }
+
 const indexOfLastStudent = currentPage * studentsPerPage;
 const indexOfFirstStudent = indexOfLastStudent - studentsPerPage;
 const currentStudents = sortedStudents.slice(indexOfFirstStudent, indexOfLastStudent);
@@ -198,6 +219,8 @@ const handleStudentAdded = (student) => {
 
   setEditingStudent(null);
   setShowForm(false);
+  setCurrentPage(1);
+  alert("Students Imported Successfully!");
 };
 
 const handleResetFilters = () => {
@@ -252,11 +275,89 @@ const handleResetFilters = () => {
   alert("Student Verified Successfully!");
 
 };
+
+
+const handleImportStudents = async (event) => {
+
+  const file = event.target.files[0];
+
+  if (!file) return;
+
+  try {
+
+    const importedStudents = await importStudents(file);
+    const formattedStudents = importedStudents.map((row) => ({
+  id: row.id || row.ID,
+  firstName: row.firstName || row["First Name"],
+  lastName: row.lastName || row["Last Name"],
+  email: row.email || row.Email,
+  phone: row.phone || row.Phone,
+  age: row.age || row.Age,
+  gender: row.gender || row.Gender,
+  verificationStatus: (
+  row.verificationStatus ||
+  row["Verification Status"] ||
+  "Pending"
+)
+  .toString()
+  .trim()
+  .toLowerCase(),
+}));
+
+    setStudents((prevStudents) => {
+
+      const mergedStudents = [...prevStudents];
+
+      formattedStudents.forEach((student) => {
+
+  const exists = mergedStudents.some(
+    (s) => Number(s.id) === Number(student.id)
+  );
+
+  if (!exists) {
+    mergedStudents.push({
+      ...student,
+      age: Number(student.age),
+      phone: String(student.phone),
+    });
+  }
+
+});
+
+      localStorage.setItem(
+        "students",
+        JSON.stringify(mergedStudents)
+      );
+
+      return mergedStudents;
+
+    });
+
+    alert("Students Imported Successfully!");
+
+  } catch (error) {
+
+    alert("Import Failed!");
+
+  }
+
+};
+
+
+
   return (
     <>
 
       {/* Navbar */}
       <Navbar />
+
+      <input
+      type="file"
+      accept=".csv,.xlsx,.xls"
+      ref={fileInputRef}
+      style={{ display: "none" }}
+      onChange={handleImportStudents}
+    />
 
       <div className="p-5 bg-gray-100 min-h-screen">
 
@@ -361,14 +462,59 @@ const handleResetFilters = () => {
     </button>
         </div>
         {/*            Student Form            */}
-        <div className="flex justify-end mb-6">
-          <button onClick={() => { setEditingStudent(null); setShowForm(true);
+        <div className="flex justify-end mb-6 relative">
 
-}}
-            className="bg-blue-500 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded shadow trasition duration-300">
-              + Add Student
-            </button>
-        </div>
+  <button
+    onClick={() => setShowMenu(!showMenu)}
+    className="bg-blue-500 hover:bg-blue-700 text-white font-semibold px-5 py-2 rounded-lg shadow transition duration-300"
+  >
+    Actions ▼
+  </button>
+
+  {showMenu && (
+    <div className="absolute top-12 right-0 w-56 bg-white rounded-lg shadow-lg border z-50">
+
+      {/* Add Student */}
+
+      <button
+        onClick={() => {
+          setEditingStudent(null);
+          setShowForm(true);
+          setShowMenu(false);
+        }}
+        className="w-full text-left px-4 py-3 hover:bg-gray-100"
+      >
+        ➕ Add Student
+      </button>
+
+      {/* Export */}
+
+      <button
+        onClick={() => {
+          setShowExportModal(true);
+          setShowMenu(false);
+        }}
+        className="w-full text-left px-4 py-3 hover:bg-gray-100"
+      >
+        📤 Export Data
+      </button>
+
+      {/* Import */}
+
+      <button
+        onClick={() => {
+          setShowImportModal(true);
+          setShowMenu(false);
+        }}
+        className="w-full text-left px-4 py-3 hover:bg-gray-100"
+      >
+        📥 Import Data
+      </button>
+
+    </div>
+  )}
+
+</div>
 
 {
   showForm &&
@@ -391,7 +537,7 @@ const handleResetFilters = () => {
         {currentStudents.length > 0 ? (
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-
+           
             {currentStudents.map((student) => (
 
               <div
@@ -444,17 +590,20 @@ const handleResetFilters = () => {
 
                 <div className="mt-4">
   <p className="font-semibold">
-    Status :
-    <span
-      className={`ml-2 px-2 py-1 rounded-full text-sm font-medium ${
-        student.verificationStatus === "Verified"
-          ? "bg-green-100 text-green-700"
-          : "bg-yellow-100 text-yellow-700"
-      }`}
-    >
-      {student.verificationStatus || "Pending"}
-    </span>
-  </p>
+  Status :
+  <span
+    className={`ml-2 px-2 py-1 rounded-full text-sm font-medium ${
+      student.verificationStatus?.toLowerCase() === "verified"
+        ? "bg-green-100 text-green-700"
+        : "bg-yellow-100 text-yellow-700"
+    }`}
+  >
+    {student.verificationStatus
+      ? student.verificationStatus.charAt(0).toUpperCase() +
+        student.verificationStatus.slice(1).toLowerCase()
+      : "Pending"}
+  </span>
+</p>
 </div>
 
 <hr className="my-4" />
@@ -512,11 +661,140 @@ const handleResetFilters = () => {
           </p>
 
         )}
+          
+          {showExportModal && (
+  <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
+
+    <div className="bg-white rounded-xl p-6 w-96 shadow-xl">
+
+      <h2 className="text-2xl font-bold mb-4">
+        Export Data
+      </h2>
+
+      <p className="mb-4 text-gray-600">
+        Choose File Format
+      </p>
+
+      <div className="space-y-3">
+
+        <label className="flex items-center gap-2">
+          <input
+  type="radio"
+  name="export"
+  value="csv"
+  checked={exportFormat === "csv"}
+  onChange={(e) => setExportFormat(e.target.value)}
+/>
+          CSV
+        </label>
+
+        <label className="flex items-center gap-2">
+          <input
+  type="radio"
+  name="export"
+  value="excel"
+  checked={exportFormat === "excel"}
+  onChange={(e) => setExportFormat(e.target.value)}
+/>
+          Excel
+        </label>
 
       </div>
+
+      <div className="flex justify-end gap-3 mt-6">
+
+        <button
+          onClick={() => setShowExportModal(false)}
+          className="px-4 py-2 rounded border"
+        >
+          Cancel
+        </button>
+
+        <button
+  onClick={() => {
+
+  if (exportFormat === "csv") {
+
+    exportToCSV(students);
+    alert("CSV file exported successfully!");
+
+  } else {
+
+    exportToExcel(students);
+    alert("Excel file exported successfully!");
+
+  }
+
+  setShowExportModal(false);
+
+}}
+>
+  Export
+</button>
+
+      </div>
+
+    </div>
+
+  </div>
+)}
+      </div>
+
+      {/* ================= Import Modal ================= */}
+
+{showImportModal && (
+  <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
+
+    <div className="bg-white rounded-xl p-6 w-96 shadow-xl">
+
+      <h2 className="text-2xl font-bold mb-4">
+        Import Data
+      </h2>
+
+      <p className="mb-4 text-gray-600">
+        Choose a CSV or Excel file
+      </p>
+
+      <div className="mb-5">
+
+        <button
+          onClick={() => fileInputRef.current.click()}
+          className="w-full border rounded-lg py-3 bg-gray-100 hover:bg-gray-200"
+        >
+          Choose File
+        </button>
+
+      </div>
+
+      <div className="flex justify-end gap-3">
+
+        <button
+          onClick={() => setShowImportModal(false)}
+          className="px-4 py-2 rounded border"
+        >
+          Cancel
+        </button>
+
+        <button
+          onClick={() => {
+            fileInputRef.current.click();
+            setShowImportModal(false);
+          }}
+          className="px-4 py-2 rounded bg-blue-600 text-white"
+        >
+          Import
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+)}
 
     </>
   );
 }
+
 
 export default Dashboard;

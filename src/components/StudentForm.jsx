@@ -43,7 +43,6 @@ function StudentForm({
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            console.log("Form Submitted");
             handleSubmit();
           }}
         >

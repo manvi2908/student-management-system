@@ -73,11 +73,7 @@ const handleSubmit = async () => {
     }
 
   } catch (error) {
-
-    console.log(error);
-
     alert("Something went wrong");
-
   }
 
 };
