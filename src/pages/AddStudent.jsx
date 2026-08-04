@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import StudentForm from "../components/StudentForm";
-import { addStudent,updateStudent } from "../services/studentServices";
 import { validateStudent } from "../utils/validation";
 
 function AddStudent({ editingStudent, setEditingStudent, setShowForm, onStudentAdded }) {
@@ -39,6 +38,7 @@ function AddStudent({ editingStudent, setEditingStudent, setShowForm, onStudentA
 
   }, [editingStudent]);
 
+
 const handleSubmit = async () => {
 
   const validationErrors = validateStudent(formData);
@@ -61,31 +61,35 @@ const handleSubmit = async () => {
 
       alert("Student Updated Successfully");
 
-    } else {
+    } 
+    else {
+  
+  onStudentAdded({
+    ...formData,
+    verificationStatus: "Pending",
+  });
 
-      // Add new student
-      const response = await addStudent(formData);
+  alert("Student Added Successfully");
 
-      onStudentAdded(response.data);
-
-      alert("Student Added Successfully");
-
-    }
+}
 
   } catch (error) {
     alert("Something went wrong");
   }
-
 };
+
+
+{/* Pass props to StudentForm component and responsible for rendering the UI*/}
   return (
     <StudentForm
-      formData={formData}
-      editingStudent={editingStudent}
-      setFormData={setFormData}
-      handleSubmit={handleSubmit}
-      setShowForm={setShowForm}
-      errors={errors}
-    />
+  formData={formData}
+  editingStudent={editingStudent}
+  setFormData={setFormData}
+  handleSubmit={handleSubmit}
+  setShowForm={setShowForm}
+  errors={errors}
+  setErrors={setErrors}
+/>
   );
 }
 
